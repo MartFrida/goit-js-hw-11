@@ -25,7 +25,7 @@ const onSearchFormElSubmit = async event => {
 
     if (data.total_pages === 1) {
       galleryListEl.innerHTML = createGalleryCardsTemplate(data.hits);
-      // loadMoreBtn.classList.add('is-hidden');
+      loadMoreBtn.classList.add('is-hidden');
       return;
     }
     galleryListEl.innerHTML = createGalleryCardsTemplate(data.hits);
@@ -44,9 +44,10 @@ const onLoadMoreBtnClick = async event => {
     const { data } = await pixabayAPI.fetchPhotosByQuery();
 
     galleryListEl.insertAdjacentHTML('beforeend', createGalleryCardsTemplate(data.hits));
-
+// змінити на data qantity page
     if (data.hits === pixabayAPI.page) {
       loadMoreBtn.classList.add('is-hidden');
+      Notify.info("We're sorry, but you've reached the end of search results.");
     }
   } catch (err) {
     console.log(err);
