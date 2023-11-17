@@ -28,7 +28,7 @@ ol {
   list-style: none;
 }
 
-.link {
+a {
   text-decoration: none;
 }
 
@@ -43,9 +43,11 @@ ol {
 
 .photo-card {
   flex-basis: calc((100% - 90px) / 4);
-  position: relative;
   box-shadow: 0px 1px 6px rgba(46, 47, 66, 0.08),
     0px 1px 1px rgba(46, 47, 66, 0.16), 0px 2px 1px rgba(46, 47, 66, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 img {
@@ -54,12 +56,20 @@ img {
   object-fit: cover;
 }
 
-.info {
+.info a {
   flex-direction: row;
   display: flex;
   justify-content: space-between;
   gap: 5px;
   margin: 1rem;
+}
+
+.info-item {
+  color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 5px;
 }
 
 .is-hidden {

@@ -5,8 +5,10 @@ export const createGalleryCardsTemplate = photos => {
       return `
            <div class="photo-card">
       <a href='${largeImageURL}'>
+      <div class="img-wrapper">
       <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-      <div class="info">
+      </div>
+            <div class="info">
         <p class="info-item">
           <b>Likes</b>
           ${likes}
@@ -25,7 +27,7 @@ export const createGalleryCardsTemplate = photos => {
         </p>
         </a>
       </div>
-      
+      </div>
     
     `;
     })
