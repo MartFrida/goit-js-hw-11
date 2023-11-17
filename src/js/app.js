@@ -1,4 +1,5 @@
 import { Report } from 'notiflix/build/notiflix-report-aio';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { formEl, searchQueryEl, searchBtn, galleryListEl, loadMoreBtn, simpleLiteBox } from './refs';
 import { createGalleryCardsTemplate } from './markup';
 import { PixabayAPI } from './pixabay-api';
@@ -16,10 +17,9 @@ const onSearchFormElSubmit = async event => {
     const { data } = await pixabayAPI.fetchPhotosByQuery();
     if (data.total === 0) {
       galleryListEl.innerHTML = '';
-      // loadMoreBtn.classList.add('is-hidden');
+      loadMoreBtn.classList.add('is-hidden');
       // searchQueryEl.reset();
-      Report.failure('Oops! data.total === 0',
-        'Something went wrong!', 'Try reloading the page!');
+      Notify.info('Sorry, there are no images matching your search query. Please try again.');
       return;
     }
 
@@ -36,16 +36,17 @@ const onSearchFormElSubmit = async event => {
   }
 };
 
-const onLoadMoreBtnElClick = async event => {
+// callback for load more pictures
+const onLoadMoreBtnClick = async event => {
   pixabayAPI.page += 1;
 
   try {
     const { data } = await pixabayAPI.fetchPhotosByQuery();
 
-    galleryListEl.insertAdjacentHTML('beforeend', createGalleryCardsTemplate(data.results));
+    galleryListEl.insertAdjacentHTML('beforeend', createGalleryCardsTemplate(data.hits));
 
-    if (data.total_pages === pixabayAPI.page) {
-      // loadMoreBtn.classList.add('is-hidden');
+    if (data.hits === pixabayAPI.page) {
+      loadMoreBtn.classList.add('is-hidden');
     }
   } catch (err) {
     console.log(err);
@@ -53,3 +54,4 @@ const onLoadMoreBtnElClick = async event => {
 };
 
 formEl.addEventListener('submit', onSearchFormElSubmit);
+loadMoreBtn.addEventListener('click', onLoadMoreBtnClick)
