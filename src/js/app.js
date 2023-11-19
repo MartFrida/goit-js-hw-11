@@ -1,9 +1,39 @@
-import { Notify, Report } from 'notiflix/build/notiflix-notify-aio';
-import { formEl, searchQueryEl, searchBtn, galleryListEl, loadMoreBtn, simpleLiteBox, infiniteScroll } from './refs';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { Report } from 'notiflix/build/notiflix-report-aio';
+import { formEl, galleryListEl, simpleLiteBox, infiniteScroll } from './refs';
 import { createGalleryCardsTemplate } from './markup';
 import { PixabayAPI } from './pixabay-api';
 
 const pixabayAPI = new PixabayAPI();
+
+const options = {
+  root: null,
+  rootMargin: "0px 0px 100px 0px",
+  threshold: 1.0,
+};
+
+//infinite scroll
+
+const onInfiniteLoad = async (entries, observer) => {
+  if (!entries[0].isIntersecting) {
+    return;
+  }
+  pixabayAPI.page += 1;
+  try {
+    const { data } = await pixabayAPI.fetchPhotosByQuery();
+    const lastPage = Math.ceil(data.totalHits / pixabayAPI.perPage)
+    galleryListEl.insertAdjacentHTML('beforeend', createGalleryCardsTemplate(data.hits));
+
+    if (lastPage === pixabayAPI.page) {
+      Notify.info("We're sorry, but you've reached the end of search results.");
+      infiniteScrollObserver.observe(infiniteScroll)
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const infiniteScrollObserver = new IntersectionObserver(onInfiniteLoad, options);
 
 // Фун-ція для пошуку з інпуту
 const onSearchFormElSubmit = async event => {
@@ -15,80 +45,32 @@ const onSearchFormElSubmit = async event => {
 
   try {
     const { data } = await pixabayAPI.fetchPhotosByQuery();
+    if (data.totalHits === 0) {
+      Report.info(
+        "Sorry,",
+        'there are no images matching your search query.',
+        'Please try again.',
+      );
+    }
 
-    if (data.total === 0) {
-      galleryListEl.innerHTML = '';
-      // loadMoreBtn.classList.add('is-hidden');
-      searchQueryEl.reset();
-      infiniteScrollObserver.observe(infiniteScroll)
-      Notify.info('Sorry, there are no images matching your search query. Please try again.');
-      return;
+    if (data.totalHits > 0) {
+      Notify.success(`we found ${data.totalHits} pictures`);
     }
 
     if (data.total === 1) {
       galleryListEl.innerHTML = createGalleryCardsTemplate(data.hits);
-      // loadMoreBtn.classList.add('is-hidden');
       return;
     }
     galleryListEl.innerHTML = createGalleryCardsTemplate(data.hits);
     simpleLiteBox.refresh();
-    // loadMoreBtn.classList.remove('is-hidden');
+
+    if (data.totalHits > pixabayAPI.perPage) {
+      infiniteScrollObserver.observe(infiniteScroll);
+    }
+
   } catch (err) {
     Report.failure('Oops! Something went wrong! Try reloading the page!');
   }
 };
 
-// callback for load more pictures
-// const onLoadMoreBtnClick = async event => {
-//   pixabayAPI.page += 1;
-//   try {
-//     const { data } = await pixabayAPI.fetchPhotosByQuery();
-//     galleryListEl.insertAdjacentHTML('beforeend', createGalleryCardsTemplate(data.hits));
-//     // змінити на data qantity page
-//     if (data.hits === pixabayAPI.page) {
-//       loadMoreBtn.classList.add('is-hidden');
-//       Notify.info("We're sorry, but you've reached the end of search results.");
-//     }
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
-// loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
-
-
 formEl.addEventListener('submit', onSearchFormElSubmit);
-
-//infinite scroll
-
-const onInfiniteLoad = async (entries, observer) => {
-  if (!entries[0].isIntersecting) {
-    return;
-  }
-  pixabayAPI.page += 1;
-  try {
-    if (pixabayAPI.query === undefined) {
-      //якщо запиту немає, то нічого не повинно підгружатися
-
-    }
-    const { data } = await pixabayAPI.fetchPhotosByQuery();
-
-    galleryListEl.insertAdjacentHTML('beforeend', createGalleryCardsTemplate(data.hits));
-    // де в моїх дата кількість сторінок
-    if (data.hits === pixabayAPI.page) {
-
-      observer.unobserve(infiniteScroll);
-      Notify.info("We're sorry, but you've reached the end of search results.");
-    }
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const options = {
-  root: null,
-  rootMargin: "0px 0px 100px 0px",
-  threshold: 1.0,
-};
-
-const infiniteScrollObserver = new IntersectionObserver(onInfiniteLoad, options);
-infiniteScrollObserver.observe(infiniteScroll);

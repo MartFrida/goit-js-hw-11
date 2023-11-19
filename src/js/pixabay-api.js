@@ -9,7 +9,7 @@ export class PixabayAPI {
   constructor() {
     this.page = 1;
     this.#query = null;
-    this.perPage = 12;
+    this.perPage = 40;
   }
 
   // Запит картинок по ключовому слову
