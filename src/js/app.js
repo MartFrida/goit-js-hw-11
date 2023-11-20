@@ -24,7 +24,7 @@ const onInfiniteLoad = async (entries, observer) => {
     const lastPage = Math.ceil(data.totalHits / pixabayAPI.perPage)
     galleryListEl.insertAdjacentHTML('beforeend', createGalleryCardsTemplate(data.hits));
     simpleLiteBox.refresh ();
-    
+
     if (lastPage === pixabayAPI.page) {
       Notify.info("We're sorry, but you've reached the end of search results.");
       infiniteScrollObserver.observe(infiniteScroll)
